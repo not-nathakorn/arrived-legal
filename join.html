@@ -6,7 +6,7 @@
 <meta name="apple-itunes-app" content="app-id=6837016237">
 <title>Arrived · เข้ากลุ่ม</title>
 <style>
-  :root { --ink:#0f1b3d; --body:#46526e; --blue:#2563eb; --chip:#eef4ff; --line:#e2e8f0; }
+  :root { --ink:#0f1b3d; --body:#46526e; --blue:#2563eb; --chip:#eef4ff; --line:#e2e8f0; --teal:#0d9488; }
   * { box-sizing: border-box; }
   body { margin:0; font-family: -apple-system, "Sukhumvit Set", "Thonburi", system-ui, sans-serif; color:var(--body);
          background:#fff; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px; }
@@ -15,11 +15,12 @@
   h1 { color:var(--ink); font-size:28px; margin:20px 0 6px; }
   p { margin:0 0 18px; line-height:1.5; }
   .code { font: 600 clamp(22px, 8vw, 34px) ui-monospace, "SF Mono", Menlo, monospace; letter-spacing:3px; white-space:nowrap; color:var(--blue);
-          background:var(--chip); border-radius:16px; padding:16px; margin:8px 0 22px; }
+          background:var(--chip); border-radius:16px; padding:16px; margin:8px 0 6px; }
+  .copied { font-size:13px; color:var(--teal); min-height:20px; margin-bottom:14px; }
   a.btn { display:block; text-decoration:none; font-weight:600; font-size:17px; border-radius:999px; padding:16px; margin:10px 0; }
   a.primary { background:var(--blue); color:#fff; }
   a.secondary { color:var(--blue); border:1.5px solid var(--line); }
-  small { display:block; margin-top:18px; font-size:13px; }
+  ol { text-align:left; padding-left:22px; margin:22px 0 0; line-height:1.6; font-size:15px; }
   .en { color:#8a94a8; font-size:14px; }
 </style>
 </head>
@@ -29,22 +30,44 @@
   <h1>เข้ากลุ่มใน Arrived</h1>
   <p>มีคนชวนคุณเข้ากลุ่มเพื่อรู้ว่ากันและกัน "ถึงแล้ว"<br><span class="en">You've been invited to a group on Arrived.</span></p>
   <div class="code" id="code">—</div>
-  <a class="btn primary" id="open" href="arrived://join">เปิดในแอป Arrived · Open in app</a>
-  <a class="btn secondary" href="https://apps.apple.com/app/id6837016237">ยังไม่มีแอป? ดาวน์โหลด · Get the app</a>
-  <p><small>ติดตั้งแล้ว ให้เปิดแอป › เข้าร่วมด้วยโค้ด แล้วพิมพ์โค้ดด้านบน (ใช้ได้ภายใน 48 ชั่วโมง)<br>
-  <span class="en">After installing, open the app › Join with code and enter the code above (valid for 48 hours).</span></small></p>
+  <div class="copied" id="copied"></div>
+
+  <a class="btn primary" id="get" href="https://apps.apple.com/app/id6837016237">ดาวน์โหลด Arrived · Get the app</a>
+  <a class="btn secondary" id="open" href="arrived://join">มีแอปแล้ว · เปิดในแอป</a>
+
+  <ol>
+    <li>ดาวน์โหลดและเปิด Arrived แล้วเข้าสู่ระบบด้วย Apple</li>
+    <li>ที่หน้า "เข้าร่วมด้วยโค้ด" แตะ <b>วาง</b> (เราคัดลอกลิงก์ไว้ให้แล้ว) หรือพิมพ์โค้ดด้านบน</li>
+    <li>โค้ดใช้ได้ภายใน 48 ชั่วโมง</li>
+  </ol>
+  <p class="en" style="margin-top:12px">Install Arrived, sign in with Apple, then tap <b>Paste</b> on the "Join with code" screen
+  (the link is already copied) or type the code above. Valid for 48 hours.</p>
 </main>
 <script>
   // Only A–Z / 0–9, exactly 8 characters: nothing from the URL is ever inserted as HTML.
   var raw = new URLSearchParams(location.search).get("c") || "";
   var code = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  var codeBox = document.getElementById("code");
   if (code.length === 8) {
-    document.getElementById("code").textContent = code.slice(0, 4) + " " + code.slice(4);
-    var link = "arrived://join?c=" + code;
-    document.getElementById("open").href = link;
-    setTimeout(function () { location.href = link; }, 300);   // straight into the app when it's installed
+    codeBox.textContent = code.slice(0, 4) + " " + code.slice(4);
+    document.getElementById("open").href = "arrived://join?c=" + code;
+    var link = location.origin + location.pathname + "?c=" + code;
+    function copy() {
+      if (!navigator.clipboard) return Promise.resolve(false);
+      return navigator.clipboard.writeText(link).then(function () {
+        document.getElementById("copied").textContent = "คัดลอกลิงก์แล้ว · Link copied";
+        return true;
+      }, function () { return false; });
+    }
+    // Copy before leaving for the App Store, so the code can be pasted in the app after installing.
+    document.getElementById("get").addEventListener("click", function (e) {
+      var href = this.href;
+      e.preventDefault();
+      copy().then(function () { location.href = href; });
+    });
+    codeBox.addEventListener("click", copy);
   } else {
-    document.getElementById("code").textContent = "ลิงก์ไม่ถูกต้อง";
+    codeBox.textContent = "ลิงก์ไม่ถูกต้อง";
     document.getElementById("open").style.display = "none";
   }
 </script>
